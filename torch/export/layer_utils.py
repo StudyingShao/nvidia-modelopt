@@ -862,7 +862,7 @@ def build_mlp_config(module: nn.Module, decoder_type, dtype: torch.dtype) -> MLP
                 hidden_act = _get_hidden_act(getattr(module, act)).split("_")[0]
                 break
 
-    if decoder_type == "bloom":
+    if decoder_type in ["bloom", "glm"]:
         hidden_act = "gelu"
 
     if decoder_type == "qwen":

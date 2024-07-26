@@ -44,6 +44,7 @@ MODEL_NAME_TO_HF_ARCH_MAP = {
     "gpt2": "GPTForCausalLM",
     "gptnext": "GPTForCausalLM",
     "recurrentgemma": "RecurrentGemmaForCausalLM",
+    "glm": "ChatGLMForCausalLM",
 }
 
 
@@ -201,6 +202,22 @@ def convert_to_tensorrt_llm_config(
                     0
                 ].apply_residual_connection_post_layernorm,  # False
                 "rope_ratio": model_config.layers[0].rope_ratio,
+            }
+        )
+    elif decoder_type == "glm":
+        config.update(
+            {
+                "max_position_embeddings": 1024,
+                "chatglm_version": "glm",
+                "add_bias_linear": model_config.layers[0].attention.dense.bias is not None,  # True
+                "add_qkv_bias": model_config.layers[0].attention.qkv.bias is not None,  # True
+                "apply_query_key_layer_scaling": False,
+                "apply_residual_connection_post_layernorm": model_config.layers[
+                    0
+                ].apply_residual_connection_post_layernorm,  # False
+                "position_embedding_type": "learned_absolute",
+                "rope_ratio": model_config.layers[0].rope_ratio,
+                "use_parallel_embedding": "False",
             }
         )
     elif decoder_type == "falcon":

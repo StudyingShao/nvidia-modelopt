@@ -474,6 +474,7 @@ class ModelConfig:
     # Model structure and weights
     vocab_embedding: EmbeddingConfig = None
     position_embedding: EmbeddingConfig = None
+    block_embedding: EmbeddingConfig = None
     ln_embed: LayernormConfig = None
     layers: List[DecoderLayerConfig] = field(default_factory=list)
 

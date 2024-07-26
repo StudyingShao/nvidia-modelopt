@@ -199,7 +199,9 @@ def torch_to_tensorrt_llm_checkpoint(
         pipeline_parallel=training_pipeline_parallel,
         vocab_size=vocab_size,
     )
-    # Build the full model_config dict layer by layer.
+    # Build the full model_config dict layer by layer.    
+    if decoder_type == "glm":
+        config.vocab_embedding = build_embedding_config(model.word_embeddings, dtype)
     for module in transformer_layers:
         if is_embedding(module):
             if config.vocab_embedding is None:
@@ -215,8 +217,10 @@ def torch_to_tensorrt_llm_checkpoint(
                 config.vocab_embedding = build_embedding_config(
                     module, dtype, normalization_constant=normalization_constant
                 )
-            elif has_position_embedding:
+            elif has_position_embedding and config.position_embedding is None:
                 config.position_embedding = build_embedding_config(module, dtype)
+            elif decoder_type == "glm":
+                    config.block_embedding = build_embedding_config(module, dtype)
         elif is_decoder_list(module):
             layers = []
             for layer in module.children():
@@ -252,6 +256,7 @@ def torch_to_tensorrt_llm_checkpoint(
             "mpt",
             "gpt2",
             "gemma",
+            "glm",
         ], f"lm_head not available for decoder {decoder_type}"
         config.share_embedding_table = True
 
